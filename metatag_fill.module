@@ -1,0 +1,69 @@
+<?php
+/**
+ * Implements hook_menu().
+ */
+function metatag_fill_menu() {
+  $items = array();
+  $items['admin/config/search/metatags/fill'] = array(
+    'title' => t('Fill Defaults'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('metatag_fill_config'),
+    'access callback' => TRUE,
+    'file' => 'metatag_fill.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+
+/**
+ * Batch API callback function.
+ * @param $data
+ * @param $operation_details
+ * @param $context
+ */
+function metatag_fill_process_item($data, $operation_details ,&$context) {
+  $metatags = array_shift(metatag_metatags_load($data['info'][0], $data['eid']));
+  $config = metatag_config_load_with_defaults(implode(':', $data['info']));
+  if($metatags && $config) {
+    $changed = FALSE;
+    foreach($data['tags'] as $tag => $process) {
+      if($process) {
+        $entity = entity_load_single($data['info'][0], $data['eid']);
+        // Determine the entity's language.
+        $langcode = entity_language($data['info'][0], $entity);
+
+        // Unfortunately due to how core works, the normal entity_language()
+        // function returns 'und' instead of the node's language during node
+        // creation.
+        if ((empty($langcode) || $langcode == LANGUAGE_NONE) && !empty($entity->language)) {
+          $langcode = $entity->language;
+        }
+
+        // If no language was still found, use the 'no language' value.
+        if (empty($langcode)) {
+          $langcode = LANGUAGE_NONE;
+        }
+        if(empty($metatags[$langcode][$tag]['value'])) {
+          $metatags[$langcode][$tag]['value'] = $config[$tag]['value'];
+          $changed = TRUE;
+        }
+      }
+    }
+    if($changed) {
+      list($eid, $vid, $bundle) = entity_extract_ids($data['info'][0], $entity);
+      metatag_metatags_save($data['info'][0], $data['eid'], $vid, $metatags, $langcode, NULL);
+    }
+  }
+}
+
+/**
+ * Batch API finished callback.
+ * @param $success
+ * @param $results
+ * @param $operations
+ */
+function metatag_fill_batch_finish($success, $results, $operations) {
+  drupal_set_message(t('Metatag Default Fill batch complete!'));
+}
+

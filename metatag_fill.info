@@ -1,0 +1,4 @@
+name = Metatag Fill
+description = Fills in empty content entities with meta tag defaults.
+core = 7.x
+version = 7.x-1.0
