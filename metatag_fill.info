@@ -2,5 +2,5 @@ name = Metatag Fill
 description = Fills in empty content entities with meta tag defaults.
 core = 7.x
 version = 7.x-1.1
-dependencies[] = metatag
+dependencies[] = metatag (>= 1.7)
 configure = admin/config/search/metatags/fill
