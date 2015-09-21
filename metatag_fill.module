@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * Metatag Fill module.
+ */
+
+/**
  * Implements hook_menu().
  */
 function metatag_fill_menu() {
@@ -18,17 +23,16 @@ function metatag_fill_menu() {
 
 /**
  * Batch API callback function.
- * @param $data
- * @param $operation_details
- * @param $context
+ *
+ * @see metatag_fill_batch_set()
  */
-function metatag_fill_process_item($data, $operation_details ,&$context) {
+function metatag_fill_process_item($data, $operation_details, &$context) {
   $metatags = array_shift(metatag_metatags_load($data['info'][0], $data['eid']));
   $config = metatag_config_load_with_defaults(implode(':', $data['info']));
-  if($metatags && $config) {
+  if ($metatags && $config) {
     $changed = FALSE;
-    foreach($data['tags'] as $tag => $process) {
-      if($process) {
+    foreach ($data['tags'] as $tag => $process) {
+      if ($process) {
         $entity = entity_load_single($data['info'][0], $data['eid']);
         // Determine the entity's language.
         $langcode = entity_language($data['info'][0], $entity);
@@ -44,13 +48,13 @@ function metatag_fill_process_item($data, $operation_details ,&$context) {
         if (empty($langcode)) {
           $langcode = LANGUAGE_NONE;
         }
-        if(empty($metatags[$langcode][$tag]['value'])) {
+        if (empty($metatags[$langcode][$tag]['value'])) {
           $metatags[$langcode][$tag]['value'] = $config[$tag]['value'];
           $changed = TRUE;
         }
       }
     }
-    if($changed) {
+    if ($changed) {
       list($eid, $vid, $bundle) = entity_extract_ids($data['info'][0], $entity);
       metatag_metatags_save($data['info'][0], $data['eid'], $vid, $metatags, $langcode, NULL);
     }
@@ -59,11 +63,9 @@ function metatag_fill_process_item($data, $operation_details ,&$context) {
 
 /**
  * Batch API finished callback.
- * @param $success
- * @param $results
- * @param $operations
+ *
+ * @see metatag_fill_process_item()
  */
 function metatag_fill_batch_finish($success, $results, $operations) {
   drupal_set_message(t('Metatag Default Fill batch complete!'));
 }
-
