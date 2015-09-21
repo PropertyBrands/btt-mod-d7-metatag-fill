@@ -3,4 +3,5 @@ description = Fills in empty content entities with meta tag defaults.
 core = 7.x
 version = 7.x-1.1
 dependencies[] = metatag (>= 1.7)
+dependencies[] = token (>= 1.6)
 configure = admin/config/search/metatags/fill
