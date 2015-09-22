@@ -9,14 +9,16 @@
  */
 function metatag_fill_menu() {
   $items = array();
+
   $items['admin/config/search/metatags/fill'] = array(
     'title' => t('Fill Defaults'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('metatag_fill_config'),
     'access callback' => TRUE,
     'file' => 'metatag_fill.admin.inc',
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
   );
+
   return $items;
 }
 
