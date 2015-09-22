@@ -1,15 +1,20 @@
 <?php
 /**
- * Form callback.
- * @param $form
- * @param $form_state
+ * @file
+ * Admin pages.
+ */
+
+/**
+ * Form callback; displays the metatag fill settings form.
+ *
+ * @see metatag_fill_menu()
  */
 function metatag_fill_config($form, &$form_state) {
   drupal_set_title(t('Fill Metatag Defaults'));
   ctools_include('export');
   $form['#submit'][] = 'metatag_fill_config_submit';
   $metatags_opts = array();
-  foreach(metatag_get_info('tags') as $key => $info) {
+  foreach (metatag_get_info('tags') as $key => $info) {
     $metatags_opts[$key] = $info['label'];
   }
   $form['metatag_fill_opts'] = array(
@@ -33,9 +38,9 @@ function metatag_fill_config($form, &$form_state) {
     '#description' => t('Only content entity configuration instances are available.')
   );
   $config_opts = array();
-  foreach($configs as $config) {
+  foreach ($configs as $config) {
     $data = explode(':', $config->instance);
-    if($info = entity_get_info($data[0])) {
+    if ($info = entity_get_info($data[0])) {
       $config_opts[$config->instance] = $config->instance;
     }
   }
@@ -54,8 +59,8 @@ function metatag_fill_config($form, &$form_state) {
  */
 function metatag_fill_config_submit($form, $form_state) {
   $config_values = $form_state['values']['metatag_fill_config'];
-  foreach($config_values as $k => $v) {
-    if($v) {
+  foreach ($config_values as $k => $v) {
+    if ($v) {
       metatag_fill_batch_set($v, $form_state['values']['metatag_fill_keys']);
     }
   }
@@ -67,17 +72,21 @@ function metatag_fill_config_submit($form, $form_state) {
  */
 function metatag_fill_batch_set($info, $metatag_keys) {
   $data = explode(':', $info);
-  if($info = entity_get_info($data[0])) {
+
+  if ($info = entity_get_info($data[0])) {
     $q = new EntityFieldQuery();
     $q->entityCondition('entity_type', $data[0]);
-    if(!empty($data[1])) {
+
+    if (!empty($data[1])) {
       $q->entityCondition('bundle', $data[1]);
     }
     $res = $q->execute();
-    if(isset($res[$data[0]])) {
+
+    if (isset($res[$data[0]])) {
       $eids = array_keys($res[$data[0]]);
       $operations = array();
-      foreach($eids as $eid) {
+
+      foreach ($eids as $eid) {
         $args = array(
           'eid' => $eid,
           'info' => $data,
@@ -91,6 +100,7 @@ function metatag_fill_batch_set($info, $metatag_keys) {
           ),
         );
       }
+
       $batch_definition = array(
         'operations' => $operations,
         'finished' => 'metatag_fill_batch_finish'
