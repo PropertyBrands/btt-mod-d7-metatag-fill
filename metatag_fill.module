@@ -31,8 +31,10 @@ function metatag_fill_menu() {
 function metatag_fill_process_item($data, $operation_details, &$context) {
   $metatags = array_shift(metatag_metatags_load($data['info'][0], $data['eid']));
   $config = metatag_config_load_with_defaults(implode(':', $data['info']));
+
   if ($metatags && $config) {
     $changed = FALSE;
+
     foreach ($data['tags'] as $tag => $process) {
       if ($process) {
         $entity = entity_load_single($data['info'][0], $data['eid']);
@@ -50,13 +52,14 @@ function metatag_fill_process_item($data, $operation_details, &$context) {
         if (empty($langcode)) {
           $langcode = LANGUAGE_NONE;
         }
-        if (empty($metatags[$langcode][$tag]['value'])) {
+        if (empty($metatags[$langcode][$tag]['value']) || $data['force']) {
           $metatags[$langcode][$tag]['value'] = $config[$tag]['value'];
           $changed = TRUE;
         }
       }
     }
-    if ($changed) {
+
+    if ($changed && isset($langcode) && isset($entity)) {
       list($eid, $vid, $bundle) = entity_extract_ids($data['info'][0], $entity);
       metatag_metatags_save($data['info'][0], $data['eid'], $vid, $metatags, $langcode, NULL);
     }
